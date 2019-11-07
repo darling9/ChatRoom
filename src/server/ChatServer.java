@@ -7,6 +7,8 @@ import java.io.Writer;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ChatServer {
     private int DEFAULT_PORT = 8888;
@@ -16,7 +18,11 @@ public class ChatServer {
 
     private HashMap<Integer, Writer> clients;
 
+    private ExecutorService executorService;
+
     public ChatServer() {
+
+        this.executorService= Executors.newFixedThreadPool(10);
         this.clients = new HashMap<>();
     }
 
@@ -53,9 +59,11 @@ public class ChatServer {
         try {
             serverSocket = new ServerSocket(DEFAULT_PORT);
             System.out.println("启动服务器，监听" + DEFAULT_PORT + "端口");
+
             while (true) {
                 Socket socket = serverSocket.accept();
-                new Thread(new ChatHandler(this,socket)).start();
+                //new Thread(new ChatHandler(this,socket)).start();
+                executorService.execute(new ChatHandler(this,socket));
             }
         } catch (IOException e) {
             e.printStackTrace();
